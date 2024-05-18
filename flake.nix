@@ -11,12 +11,6 @@
       let
         pkgs = import nixpkgs {
           inherit system;
-          overlays = [
-            (self: super: {
-              # Here, you might want to create an overlay if necessary
-              klipper-firmware = super.callPackage ./klipper-firmware.nix { };
-            })
-          ];
         };
       in {
         packages.klipper-firmware-atmega2560 = pkgs.klipper-firmware.override {
