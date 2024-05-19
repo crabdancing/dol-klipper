@@ -1,0 +1,9 @@
+- Enable extra low-level configuration options: true
+- Micro-controller Architecture: STM32
+- Processor model: STM32F103
+- Bootloader offset: 28KiB bootloader
+- Clock reference: 8MHz crystal
+- Communication interface: Serial on USART PB11/PB10
+- Baud rate for serial port: 250000
+- Step pulse duration: unset
+- GPIO pins set at MCU startup: !PC6,!PD13
