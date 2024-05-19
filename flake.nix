@@ -12,31 +12,41 @@
         pkgs = import nixpkgs {
           inherit system;
         };
+        lib = pkgs.lib;
+        mkPrinterBoard = printerBoardName: {
+          ${printerBoardName} = pkgs.klipper-firmware.override {
+            mcu = "${printerBoardName}";
+            firmwareConfig = ./firmware-config/${printerBoardName}/config;
+          };
+        };
+        printerBoards = [
+          "ender3-board1_1_4"
+          "ender3v2-board4_2_7"
+          "kingroon-kp3s"
+        ];
         klipperVersion = pkgs.klipper.version;
-         packages = {
-          kingroon-kp3s = pkgs.klipper-firmware.override {
-            mcu = "kingroon-kp3s";
-            firmwareConfig = ./firmware-config/kingroon-kp3s/config;
-          };
-
-          ender3v2-board_4_2_7 = pkgs.klipper-firmware.override {
-            mcu = "ender3v2-board4.2.7";
-            firmwareConfig = ./firmware-config/ender3v2-board4.2.7/config;
-          };
-
-          # Add more targets as needed...
+        klipperFirmwarePackages = lib.foldl' lib.recursiveUpdate { } (builtins.map mkPrinterBoard printerBoards);
+        buildAllPkg = (pkgs.writeShellScriptBin "build-all" ''
+          ${
+            lib.concatStringsSep "\n" (builtins.map (printerBoardName: "echo Built ${klipperFirmwarePackages.${printerBoardName}}") printerBoards)
+          }
+        '');
+        toolPackages = {
+          "build-all" = buildAllPkg;
         };
 
-      in {
-        inherit packages;
-       
+      in
+      {
+        apps = rec {
+          default = build-all;
+          build-all = flake-utils.lib.mkApp {
+            drv = buildAllPkg;
+          };
+        };
+        packages = klipperFirmwarePackages // toolPackages;
+
         devShells.default = pkgs.mkShell {
           buildInputs = [
-            (pkgs.writeShellScriptBin "build-all" ''
-              echo Built ${packages.ender3v2-board_4_2_7}
-              echo Built ${packages.kingroon-kp3s}
-
-            '')
             (pkgs.klipper.overrideAttrs (oldAttrs: {
               version = klipperVersion;
             }))
