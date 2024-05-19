@@ -23,6 +23,7 @@
           "ender3-board1_1_4"
           "ender3v2-board4_2_7"
           "kingroon-kp3s"
+          "anycubic-chrion"
         ];
         klipperVersion = pkgs.klipper.version;
         klipperFirmwarePackages = lib.foldl' lib.recursiveUpdate { } (builtins.map mkPrinterBoard printerBoards);
@@ -32,7 +33,7 @@
           }
         '');
         toolPackages = {
-          "build-all" = buildAllPkg;
+          build-all = buildAllPkg;
         };
 
       in
