@@ -13,54 +13,28 @@
           inherit system;
         };
         lib = pkgs.lib;
-        mkPrinterBoard = printerBoardName: {
-          ${printerBoardName} = pkgs.klipper-firmware.override {
-            mcu = "${printerBoardName}";
-            firmwareConfig = ./firmware-config/${printerBoardName}/config;
-          };
-        };
-        printerBoards = [
-          "ender3-board1_1_4"
-          "ender3v2-board4_2_7"
-          "kingroon-kp3s"
-          "anycubic-chiron"
-        ];
-        klipperVersion = pkgs.klipper.version;
-        klipperFirmwarePackages = lib.foldl' lib.recursiveUpdate { } (builtins.map mkPrinterBoard printerBoards);
-        buildAllPkg = (pkgs.writeShellScriptBin "build-all" ''
-          ${
-            lib.concatStringsSep "\n" (builtins.map (printerBoardName: "echo Built ${klipperFirmwarePackages.${printerBoardName}}") printerBoards)
-          }
-        '');
-        toolPackages = {
-          build-all = buildAllPkg;
-        };
-
+ 
+        firmware-pkgs = import ./firmware-pkgs.nix { inherit pkgs lib; };
       in
       {
         apps = rec {
           default = build-all;
           build-all = flake-utils.lib.mkApp {
-            drv = buildAllPkg;
+            drv = firmware-pkgs.buildAllKlipperFirmware;
           };
         };
-        defaultPackage = buildAllPkg;
-        packages = klipperFirmwarePackages // toolPackages;
+        defaultPackage = firmware-pkgs.buildAllKlipperFirmware;
+        packages = firmware-pkgs.klipperFirmwarePackages // {
+          build-all = firmware-pkgs.buildAllKlipperFirmware;
+        };
 
         devShells.default = pkgs.mkShell {
           buildInputs = [
-            (pkgs.klipper.overrideAttrs (oldAttrs: {
-              version = klipperVersion;
-            }))
-            (pkgs.klipper-genconf.overrideAttrs (oldAttrs: {
-              version = klipperVersion;
-            }))
-            (pkgs.klipper-flash.overrideAttrs (oldAttrs: {
-              version = klipperVersion;
-            }))
-          ];
+            pkgs.klipper
+            pkgs.klipper-genconf
+            pkgs.klipper-flash          ];
           shellHook = ''
-            echo "Klipper version: ${klipperVersion}"
+            echo "Klipper version: ${pkgs.klipper.version}"
           '';
         };
       }
