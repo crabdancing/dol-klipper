@@ -12,8 +12,6 @@
         pkgs = import nixpkgs {
           inherit system;
         };
-        lib = pkgs.lib;
- 
         firmware-pkgs = pkgs.callPackage ./firmware-pkgs.nix {};
       in
       {
