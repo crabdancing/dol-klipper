@@ -32,7 +32,8 @@
           buildInputs = [
             pkgs.klipper
             pkgs.klipper-genconf
-            pkgs.klipper-flash          ];
+            pkgs.klipper-flash  
+          ];
           shellHook = ''
             echo "Klipper version: ${pkgs.klipper.version}"
           '';
