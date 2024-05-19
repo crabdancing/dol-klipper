@@ -14,18 +14,18 @@
         };
         lib = pkgs.lib;
  
-        firmware-pkgs = import ./firmware-pkgs.nix { inherit pkgs lib; };
+        firmware-pkgs = pkgs.callPackage ./firmware-pkgs.nix {};
       in
       {
         apps = rec {
           default = build-all;
           build-all = flake-utils.lib.mkApp {
-            drv = firmware-pkgs.buildAllKlipperFirmware;
+            drv = firmware-pkgs.build-all;
           };
         };
-        defaultPackage = firmware-pkgs.buildAllKlipperFirmware;
+        defaultPackage = firmware-pkgs.build-all;
         packages = firmware-pkgs.klipperFirmwarePackages // {
-          build-all = firmware-pkgs.buildAllKlipperFirmware;
+          build-all = firmware-pkgs.build-all;
         };
 
         devShells.default = pkgs.mkShell {
